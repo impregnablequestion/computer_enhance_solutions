@@ -4,22 +4,34 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define REGISTER1_MASK 0b00111000
+#define REGISTER2_MASK 0b00000111
+
 enum op_codes {
-    mov = 0b100010,
-    add = 0b100101
+    mov = 0xE2,
 };
 
-enum registers {
-    ax = '0',
+char w1_registers_table[8][8] = {
+    "ax",
+    "cx",
+    "dx",
+    "bx",
+    "sp",
+    "bp",
+    "si",
+    "di"
 };
 
-void print_binary(char x) {
-    
-    for(int i = 7; i >= 0; i--) {
-        putchar((x & (1 << i)) ? '1' : '0');
-    }
-    putchar('\n');
-}
+char memory_modes_table[4][4] = {
+    "mm00",
+    "mm08",
+    "mm16",
+    "rm00"
+};
+
+char* get_register(bool wFlag, int code);
+void print_binary(char x);
+
 
 int main(int argc, char* argv[]) {
 
@@ -50,32 +62,62 @@ int main(int argc, char* argv[]) {
     size_t read_size = fread(buffer, sizeof(char), file_size, file);
     fclose(file);
 
-    for (int i = 0; i < file_size; i++) {
-        printf("%d\n", (int)file_size);
-
-        print_binary(buffer[i]);
-    }
-
-    // get first byte
     char firstChar = buffer[0];
 
-    // check for flags
     bool wFlag = firstChar & 1;
     bool dFlag = firstChar & 2;
 
-    // check opCode
     char opCode = firstChar >> 2;
-    char hexMovCode = 0xE2;
 
-    if (opCode == hexMovCode) {
-        printf("mov");
+    char* operation;
+
+    if (opCode == (char)mov) {
+        operation = "mov";
     } else {
-        printf("not a recognised opCode");
+        printf("not a recognised opCode\n");
     }
 
-    printf("%d, %d", wFlag, dFlag);
+    char secondChar = buffer[1];
+
+    char mod = (secondChar >> 6);
+
+    int modBit1 = mod & 1;
+    int modBit2 = mod & 2;
+
+
+    int modBit = 0;
+    modBit |= modBit1;
+    modBit |= modBit2;
+
+    char* modCode = memory_modes_table[modBit];
+
+    int register1 = (secondChar & REGISTER1_MASK) >> 3;
+    int register2 = secondChar & REGISTER2_MASK;
+
+    char* reg1 = get_register(wFlag, register1);
+    char* reg2 = get_register(wFlag, register2);
+
+    printf("bits 16\n");
+    printf("\n");
+    printf("%s %s, %s", operation, reg2, reg1);
 
     free(buffer);
     return 0;
 }
 
+char* get_register(bool wFlag, int code ) {
+    if (wFlag) {
+
+        return w1_registers_table[code];
+    }
+
+    return "implement w0 registers table";
+}
+
+void print_binary(char x) {
+    
+    for(int i = 7; i >= 0; i--) {
+        putchar((x & (1 << i)) ? '1' : '0');
+    }
+    putchar('\n');
+}
