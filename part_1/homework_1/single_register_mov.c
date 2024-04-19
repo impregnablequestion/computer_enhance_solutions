@@ -32,7 +32,6 @@ char memory_modes_table[4][4] = {
 char* get_register(bool wFlag, int code);
 void print_binary(char x);
 
-
 int main(int argc, char* argv[]) {
 
     if (argc < 2) {
@@ -84,7 +83,6 @@ int main(int argc, char* argv[]) {
     int modBit1 = mod & 1;
     int modBit2 = mod & 2;
 
-
     int modBit = 0;
     modBit |= modBit1;
     modBit |= modBit2;
@@ -107,7 +105,6 @@ int main(int argc, char* argv[]) {
 
 char* get_register(bool wFlag, int code ) {
     if (wFlag) {
-
         return w1_registers_table[code];
     }
 
